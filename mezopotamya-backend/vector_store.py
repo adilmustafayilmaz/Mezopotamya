@@ -16,22 +16,31 @@ from qdrant_client.http import models
 class VectorStore:
     """Manages vector storage and retrieval using Qdrant"""
     
-    def __init__(self, host: str = None, port: int = None, collection_name: str = "tourism_documents"):
+    def __init__(self, host: str = None, port: int = None, api_key: str = None, collection_name: str = "tourism_documents"):
         """
         Initialize Qdrant client
         
         Args:
             host: Qdrant host (default from env)
-            port: Qdrant port (default from env)
+            port: Qdrant port (default from env, not used for cloud)
+            api_key: Qdrant API key (for Qdrant Cloud)
             collection_name: Name of the collection
         """
         self.host = host or os.getenv("QDRANT_HOST", "localhost")
         self.port = port or int(os.getenv("QDRANT_PORT", "6333"))
+        self.api_key = api_key or os.getenv("QDRANT_API_KEY")
         self.collection_name = collection_name
         
         # Initialize Qdrant client
         try:
-            self.client = QdrantClient(host=self.host, port=self.port)
+            # Check if using Qdrant Cloud (URL with https)
+            if self.api_key or (self.host.startswith("https://") or ".qdrant.io" in self.host or ".qdrant.cloud" in self.host):
+                # Qdrant Cloud connection
+                url = self.host if self.host.startswith("http") else f"https://{self.host}"
+                self.client = QdrantClient(url=url, api_key=self.api_key)
+            else:
+                # Local Qdrant connection
+                self.client = QdrantClient(host=self.host, port=self.port)
         except Exception as e:
             print(f"Warning: Could not connect to Qdrant at {self.host}:{self.port}: {e}")
             self.client = None

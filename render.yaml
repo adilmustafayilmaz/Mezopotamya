@@ -1,0 +1,73 @@
+services:
+  # Backend API Service
+  - type: web
+    name: mezopotamya-backend
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r mezopotamya-backend/requirements.txt
+    startCommand: cd mezopotamya-backend && python main.py
+    envVars:
+      - key: DATABASE_PATH
+        value: /opt/render/project/src/data/mezopotamya.db
+      - key: OLLAMA_HOST
+        # Use external Ollama service or Render service URL
+        value: https://your-ollama-service.onrender.com
+      - key: QDRANT_HOST
+        # Use Qdrant Cloud or Render service URL
+        value: your-qdrant-cluster.qdrant.io
+      - key: QDRANT_PORT
+        value: 6333
+      - key: QDRANT_API_KEY
+        # Required for Qdrant Cloud, leave empty for self-hosted
+        value: your-qdrant-api-key
+      - key: EMBEDDING_MODEL
+        value: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      - key: CHUNK_SIZE
+        value: 512
+      - key: CHUNK_OVERLAP
+        value: 50
+      - key: PORT
+        value: 8000
+    disk:
+      name: mezopotamya-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
+
+  # Frontend Service
+  - type: web
+    name: mezopotamya-frontend
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: cd mezopotamya-frontend && npm install && npm run build
+    startCommand: cd mezopotamya-frontend && npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: mezopotamya-backend
+          property: host
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+
+  # Qdrant Service (Optional - consider using Qdrant Cloud instead)
+  - type: web
+    name: mezopotamya-qdrant
+    env: docker
+    region: oregon
+    plan: starter
+    dockerfilePath: ./qdrant.Dockerfile
+    dockerContext: .
+    envVars:
+      - key: QDRANT__SERVICE__HTTP_PORT
+        value: 6333
+      - key: QDRANT__SERVICE__GRPC_PORT
+        value: 6334
+    disk:
+      name: qdrant-storage
+      mountPath: /qdrant/storage
+      sizeGB: 1
+
