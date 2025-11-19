@@ -1484,6 +1484,9 @@ def get_qdrant_status():
 
 if __name__ == "__main__":
     init_db()
+    # Use PORT environment variable (for Render, Heroku, etc.) or default to 8000
+    port = int(os.getenv("PORT", 8000))
+    
     print("🚀 Mezopotamya.Travel API başlatılıyor...")
     print("📝 Veritabanı hazırlandı")
     print("🤖 LLM entegrasyonu: Ollama")
@@ -1495,5 +1498,5 @@ if __name__ == "__main__":
         print("🧠 RAG servisi: Aktif")
     else:
         print("⚠️ RAG servisi: Devre dışı")
-    print("🌐 API: http://localhost:8000")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    print(f"🌐 API: http://0.0.0.0:{port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)

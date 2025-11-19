@@ -54,20 +54,21 @@ services:
         value: production
 
   # Qdrant Service (Optional - consider using Qdrant Cloud instead)
-  - type: web
-    name: mezopotamya-qdrant
-    env: docker
-    region: oregon
-    plan: starter
-    dockerfilePath: ./qdrant.Dockerfile
-    dockerContext: .
-    envVars:
-      - key: QDRANT__SERVICE__HTTP_PORT
-        value: 6333
-      - key: QDRANT__SERVICE__GRPC_PORT
-        value: 6334
-    disk:
-      name: qdrant-storage
-      mountPath: /qdrant/storage
-      sizeGB: 1
+  # Note: Commented out by default - use Qdrant Cloud for easier deployment
+  # - type: web
+  #   name: mezopotamya-qdrant
+  #   env: docker
+  #   region: oregon
+  #   plan: starter
+  #   dockerfilePath: ./qdrant.Dockerfile
+  #   dockerContext: .
+  #   envVars:
+  #     - key: QDRANT__SERVICE__HTTP_PORT
+  #       value: 6333
+  #     - key: QDRANT__SERVICE__GRPC_PORT
+  #       value: 6334
+  #   disk:
+  #     name: qdrant-storage
+  #     mountPath: /qdrant/storage
+  #     sizeGB: 1
 
